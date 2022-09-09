@@ -62,11 +62,10 @@ var (
 
 func (l *Log) Debug(v ...interface{}) {
 	name, line, ok := l.GetFileName(1)
+	l2 := Log{}
 	if ok {
-		l2 := Log{
-			File: name,
-			Line: line,
-		}
+		l2.Line = line
+		l2.File = name
 		v = append(v, JsonToString(l2))
 	}
 	debugLogger.Print(v)
@@ -75,8 +74,10 @@ func (l *Log) Debug(v ...interface{}) {
 
 func (l *Log) Info(v ...interface{}) {
 	name, line, ok := l.GetFileName(1)
+	l2 := Log{}
 	if ok {
-		l2 := Log{File: name, Line: line}
+		l2.Line = line
+		l2.File = name
 		v = append(v, JsonToString(l2))
 	}
 	infoLogger.Print(v...)
@@ -84,8 +85,10 @@ func (l *Log) Info(v ...interface{}) {
 
 func (l *Log) Warning(v ...interface{}) {
 	name, line, ok := l.GetFileName(1)
+	l2 := Log{}
 	if ok {
-		l2 := Log{File: name, Line: line}
+		l2.Line = line
+		l2.File = name
 		v = append(v, JsonToString(l2))
 	}
 	warningLogger.Print(v...)
@@ -93,8 +96,10 @@ func (l *Log) Warning(v ...interface{}) {
 
 func (l *Log) Error(v ...interface{}) {
 	name, line, ok := l.GetFileName(1)
+	l2 := Log{}
 	if ok {
-		l2 := Log{File: name, Line: line}
+		l2.Line = line
+		l2.File = name
 		v = append(v, JsonToString(l2))
 	}
 	errorLogger.Print(v...)
