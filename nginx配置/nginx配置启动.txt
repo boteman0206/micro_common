@@ -1,0 +1,85 @@
+
+
+本机windows使用
+1: 下载地址：http://nginx.org/en/download.html
+2:  cd 到nginx的解压目录
+    启动nginx： start nginx
+    查看配置文件是否正常： nginx -t
+3: 启动成功之后浏览器输入  localhost, http://localhost, http://127.0.0.1  不是https,切记
+
+
+4：涉及配置
+    1、 proxy_pass：配置反向代理的路径。需要注意的是如果 proxy_pass 的 url 最后为/，则表示绝对路径。否则（不含变量下）表示相对路径，所有的路径都会被代理过去
+    2、 upstream：配置负载均衡，upstream 默认是以轮询的方式进行负载，另外还支持四种模式，分别是：
+    （1）weight：权重，指定轮询的概率，weight 与访问概率成正比
+    （2）ip_hash：按照访问 IP 的 hash 结果值分配
+    （3）fair：按后端服务器响应时间进行分配，响应时间越短优先级别越高
+    （4）url_hash：按照访问 URL 的 hash 结果值分配
+
+5： 配置本机的域名(一定注意不能使用127.0.0.1)
+一定使用ipconfig查看域名： 192.168.xx.xx api.blog.com
+
+
+5: 配置反向代理
+worker_processes  1;
+
+events {
+    worker_connections  1024;
+}
+http {
+    include       mime.types;
+    default_type  application/octet-stream;
+
+    sendfile        on;
+    keepalive_timeout  65;
+
+    server {
+        listen       8001;
+        server_name  api.blog.com;
+
+        # 没有匹配到的请求
+       location / {
+            root   html;
+            index  index.html index.htm;
+       }
+       # 匹配以/api开头的接口，代理到 8801端口
+       location  /api {
+            proxy_pass http://127.0.0.1:8801;   #  这里切记不能带斜杠：代理会失效 http://127.0.0.1:8801/
+        }
+
+        # 另外一种写法正则匹配，匹配以 /api开头的代理到8801端口
+        location  ^~ /api {
+                    proxy_pass http://127.0.0.1:8801;
+        }
+
+    }
+}
+
+6：配置负载均衡
+worker_processes  1;
+
+events {
+    worker_connections  1024;
+}
+
+http {
+    include       mime.types;
+    default_type  application/octet-stream;
+
+    sendfile        on;
+    keepalive_timeout  65;
+
+    upstream api.blog.com {
+        server 127.0.0.1:8001;    # 配置权重  server 127.0.0.1:8001 weight=1;
+        server 127.0.0.1:8002;     # 配置权重  server 127.0.0.1:8002 weight=2;
+    }
+
+    server {
+        listen       8081;
+        server_name  api.blog.com;
+
+        location / {
+            proxy_pass http://api.blog.com/;
+        }
+    }
+}
