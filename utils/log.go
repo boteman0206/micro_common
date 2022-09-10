@@ -2,8 +2,10 @@ package utils
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"log"
+	"micro_product/micro_common/es"
 	"os"
 	"runtime"
 )
@@ -80,6 +82,10 @@ func (l *Log) Info(v ...interface{}) {
 		l2.File = name
 		v = append(v, JsonToString(l2))
 	}
+
+	add, err := es.NewEsClient().Add("", v)
+	fmt.Println("写入es情况： ", add, " add err: ", err)
+
 	infoLogger.Print(v...)
 }
 
