@@ -2,10 +2,9 @@ package utils
 
 import (
 	"bytes"
-	"fmt"
 	"io"
 	"log"
-	"micro_product/micro_common/es"
+	"micro_api/micro_common/es"
 	"os"
 	"runtime"
 )
@@ -83,8 +82,11 @@ func (l *Log) Info(v ...interface{}) {
 		v = append(v, JsonToString(l2))
 	}
 
-	add, err := es.NewEsClient().Add("", v)
-	fmt.Println("写入es情况： ", add, " add err: ", err)
+	m := make(map[int]interface{}, len(v))
+	for k, v := range v {
+		m[k] = v
+	}
+	es.NewEsClient().Add(m)
 
 	infoLogger.Print(v...)
 }
@@ -97,6 +99,11 @@ func (l *Log) Warning(v ...interface{}) {
 		l2.File = name
 		v = append(v, JsonToString(l2))
 	}
+	m := make(map[int]interface{}, len(v))
+	for k, v := range v {
+		m[k] = v
+	}
+	es.NewEsClient().Add(m)
 	warningLogger.Print(v...)
 }
 
@@ -108,6 +115,11 @@ func (l *Log) Error(v ...interface{}) {
 		l2.File = name
 		v = append(v, JsonToString(l2))
 	}
+	m := make(map[int]interface{}, len(v))
+	for k, v := range v {
+		m[k] = v
+	}
+	es.NewEsClient().Add(m)
 	errorLogger.Print(v...)
 }
 

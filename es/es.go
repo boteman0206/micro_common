@@ -3,7 +3,6 @@ package es
 import (
 	"context"
 	"fmt"
-	"github.com/google/uuid"
 	"github.com/olivere/elastic/v7"
 	"log"
 	"time"
@@ -14,11 +13,11 @@ type DC_ES struct {
 }
 
 var esClient *elastic.Client
-var esIndex = "myLog"
+var esIndex = "my_log"
 
 func init() {
 
-	var esUrl = "http://127.0.0.1:9200"
+	var esUrl = "http://localhost:9200/"
 	// 创建Client, 连接ES
 	var err error
 	esClient, err = elastic.NewClient(
@@ -54,7 +53,11 @@ func init() {
 		log.Fatal(err.Error())
 	}
 	if !exists {
-		esClient.CreateIndex(esIndex).Do(context.Background())
+		result, err := esClient.CreateIndex(esIndex).Do(context.Background())
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+		fmt.Println("创建了es的index===: ", result.Index)
 	}
 
 }
@@ -66,13 +69,10 @@ func NewEsClient() *DC_ES {
 }
 
 // 新增
-func (c *DC_ES) Add(id string, body interface{}) (bool, error) {
-	if len(id) <= 0 {
-		uid, _ := uuid.NewUUID()
-		id = uid.String()
-	}
-	_, err := c.EsClient.Index().Index(esIndex).Type("_doc").Id(id).BodyJson(body).Do(context.Background())
+func (c *DC_ES) Add(body interface{}) (bool, error) {
+	_, err := c.EsClient.Index().Index(esIndex).Type("_doc").BodyJson(body).Do(context.Background())
 	if err != nil {
+		fmt.Println("add es error : ", err.Error())
 		return false, err
 	}
 	return true, nil
