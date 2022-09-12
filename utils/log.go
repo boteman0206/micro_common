@@ -14,6 +14,7 @@ golang自带的log包使用：默认是打印时间+日志信息： 可以调整
 */
 var BufferLog *log.Logger // 定义的输出到buffer的日志,测试
 var LogBuf bytes.Buffer
+var client *es.DC_ES
 
 var MyLog *Log // 定义的输出到文件的日志
 type Log struct {
@@ -42,6 +43,10 @@ func init() {
 	errorLogger = log.New(logFile, preError, flag)
 
 	MyLog = new(Log)
+
+	// es
+
+	client = es.NewEsClient()
 }
 
 const (
@@ -62,64 +67,30 @@ var (
 )
 
 func (l *Log) Debug(v ...interface{}) {
-	name, line, ok := l.GetFileName(1)
-	l2 := Log{}
-	if ok {
-		l2.Line = line
-		l2.File = name
-		v = append(v, JsonToString(l2))
-	}
-	debugLogger.Print(v)
+	name, line, _ := l.GetFileName(1)
+	debugLogger.Print(name, line, v)
 
 }
 
 func (l *Log) Info(v ...interface{}) {
-	name, line, ok := l.GetFileName(1)
-	l2 := Log{}
-	if ok {
-		l2.Line = line
-		l2.File = name
-		v = append(v, JsonToString(l2))
-	}
-
-	m := make(map[int]interface{}, len(v))
-	for k, v := range v {
-		m[k] = v
-	}
-	es.NewEsClient().Add(m)
+	name, line, _ := l.GetFileName(1)
+	buffer := client.GetBuffer(name, line, v)
+	client.Add(buffer)
 
 	infoLogger.Print(v...)
 }
 
 func (l *Log) Warning(v ...interface{}) {
-	name, line, ok := l.GetFileName(1)
-	l2 := Log{}
-	if ok {
-		l2.Line = line
-		l2.File = name
-		v = append(v, JsonToString(l2))
-	}
-	m := make(map[int]interface{}, len(v))
-	for k, v := range v {
-		m[k] = v
-	}
-	es.NewEsClient().Add(m)
+	name, line, _ := l.GetFileName(1)
+	buffer := client.GetBuffer(name, line, v)
+	client.Add(buffer)
 	warningLogger.Print(v...)
 }
 
 func (l *Log) Error(v ...interface{}) {
-	name, line, ok := l.GetFileName(1)
-	l2 := Log{}
-	if ok {
-		l2.Line = line
-		l2.File = name
-		v = append(v, JsonToString(l2))
-	}
-	m := make(map[int]interface{}, len(v))
-	for k, v := range v {
-		m[k] = v
-	}
-	es.NewEsClient().Add(m)
+	name, line, _ := l.GetFileName(1)
+	buffer := client.GetBuffer(name, line, v)
+	client.Add(buffer)
 	errorLogger.Print(v...)
 }
 

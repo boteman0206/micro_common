@@ -1,15 +1,19 @@
 package es
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"github.com/olivere/elastic/v7"
 	"log"
+	"sync"
 	"time"
 )
 
 type DC_ES struct {
 	EsClient *elastic.Client
+	Buf      *bytes.Buffer
+	lock     *sync.Mutex
 }
 
 var esClient *elastic.Client
@@ -65,6 +69,8 @@ func init() {
 func NewEsClient() *DC_ES {
 	return &DC_ES{
 		EsClient: esClient,
+		Buf:      &bytes.Buffer{},
+		lock:     &sync.Mutex{},
 	}
 }
 
@@ -76,4 +82,20 @@ func (c *DC_ES) Add(body interface{}) (bool, error) {
 		return false, err
 	}
 	return true, nil
+}
+
+// 新增
+func (c *DC_ES) GetBuffer(fileName string, line int, v ...interface{}) map[string]interface{} {
+	c.lock.Lock()
+	defer c.lock.Unlock()
+	c.Buf.Reset()
+	logger := c.Buf
+	fmt.Fprint(logger, v...)
+
+	m := make(map[string]interface{}, 0)
+	m["fileName"] = fileName
+	m["line"] = line
+	m["message"] = logger.String()
+
+	return m
 }
