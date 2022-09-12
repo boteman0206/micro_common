@@ -85,7 +85,7 @@ func (c *DC_ES) Add(body interface{}) (bool, error) {
 }
 
 // 新增
-func (c *DC_ES) GetBuffer(fileName string, line int, v ...interface{}) map[string]interface{} {
+func (c *DC_ES) GetBuffer(trace_id, fileName string, line int, v ...interface{}) map[string]interface{} {
 	c.lock.Lock()
 	defer c.lock.Unlock()
 	c.Buf.Reset()
@@ -93,6 +93,7 @@ func (c *DC_ES) GetBuffer(fileName string, line int, v ...interface{}) map[strin
 	fmt.Fprint(logger, v...)
 
 	m := make(map[string]interface{}, 0)
+	m["trace_id"] = trace_id
 	m["fileName"] = fileName
 	m["line"] = line
 	m["message"] = logger.String()

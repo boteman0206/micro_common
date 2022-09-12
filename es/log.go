@@ -2,6 +2,9 @@ package es
 
 import (
 	"bytes"
+	"context"
+	"fmt"
+	"google.golang.org/grpc/metadata"
 	"io"
 	"log"
 	"os"
@@ -19,6 +22,7 @@ var MyLog *Log // 定义的输出到文件的日志
 type Log struct {
 	File string `json:"file"`
 	Line int    `json:"line"`
+	Ctx  context.Context
 }
 
 func init() {
@@ -65,14 +69,23 @@ var (
 )
 
 func (l *Log) Debug(v ...interface{}) {
+	var trace_id string
+	if l.Ctx != nil {
+		trace_id = LoadTraceIdStr(l.Ctx)
+	}
 	name, line, _ := l.GetFileName(1)
-	debugLogger.Print(name, line, v)
+	debugLogger.Print(trace_id, name, line, v)
 
 }
 
 func (l *Log) Info(v ...interface{}) {
 	name, line, _ := l.GetFileName(1)
-	buffer := client.GetBuffer(name, line, v)
+
+	var trace_id string
+	if l.Ctx != nil {
+		trace_id = LoadTraceIdStr(l.Ctx)
+	}
+	buffer := client.GetBuffer(trace_id, name, line, v)
 	client.Add(buffer)
 
 	infoLogger.Print(v...)
@@ -80,14 +93,23 @@ func (l *Log) Info(v ...interface{}) {
 
 func (l *Log) Warning(v ...interface{}) {
 	name, line, _ := l.GetFileName(1)
-	buffer := client.GetBuffer(name, line, v)
+
+	var trace_id string
+	if l.Ctx != nil {
+		trace_id = LoadTraceIdStr(l.Ctx)
+	}
+	buffer := client.GetBuffer(trace_id, name, line, v)
 	client.Add(buffer)
 	warningLogger.Print(v...)
 }
 
 func (l *Log) Error(v ...interface{}) {
 	name, line, _ := l.GetFileName(1)
-	buffer := client.GetBuffer(name, line, v)
+	var trace_id string
+	if l.Ctx != nil {
+		trace_id = LoadTraceIdStr(l.Ctx)
+	}
+	buffer := client.GetBuffer(trace_id, name, line, v)
 	client.Add(buffer)
 	errorLogger.Print(v...)
 }
@@ -95,4 +117,23 @@ func (l *Log) Error(v ...interface{}) {
 func (l *Log) GetFileName(skip int) (file string, line int, ok bool) {
 	_, file, line, ok = runtime.Caller(skip + 1) // 获取调用之前的路径
 	return
+}
+
+var TraceId = "trace_id"
+
+// 加载grpc的header信息
+func LoadTraceIdStr(ctx context.Context) string {
+	isExist := ctx.Value(TraceId)
+	if isExist != nil {
+		return isExist.(string)
+	}
+
+	var traceId string
+	if md, ok := metadata.FromIncomingContext(ctx); ok {
+		fmt.Println(md.Get(TraceId))
+		if len(md.Get(TraceId)) > 0 {
+			traceId = md.Get(TraceId)[0]
+		}
+	}
+	return traceId
 }
