@@ -1,6 +1,7 @@
 package middle
 
 import (
+	"fmt"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )
@@ -12,6 +13,7 @@ func TraceIdMiddle(next echo.HandlerFunc) echo.HandlerFunc {
 
 		uid, _ := uuid.NewUUID()
 		c.Set(TraceId, uid.String())
+		fmt.Println("set-uuid: ", uid.String())
 		return next(c)
 	}
 }

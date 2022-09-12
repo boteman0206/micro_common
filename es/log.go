@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"github.com/labstack/echo/v4"
 	"google.golang.org/grpc/metadata"
 	"io"
 	"log"
@@ -23,6 +24,7 @@ type Log struct {
 	File string `json:"file"`
 	Line int    `json:"line"`
 	Ctx  context.Context
+	Echo echo.Context
 }
 
 func init() {
@@ -70,8 +72,14 @@ var (
 
 func (l *Log) Debug(v ...interface{}) {
 	var trace_id string
-	if l.Ctx != nil {
-		trace_id = LoadTraceIdStr(l.Ctx)
+	if l.Ctx != nil || l.Echo != nil {
+
+		getStr := l.Echo.Get(TraceId).(string)
+		if len(getStr) > 0 {
+			trace_id = getStr
+		} else {
+			trace_id = LoadTraceIdStr(l.Ctx)
+		}
 	}
 	name, line, _ := l.GetFileName(1)
 	debugLogger.Print(trace_id, name, line, v)
@@ -82,8 +90,14 @@ func (l *Log) Info(v ...interface{}) {
 	name, line, _ := l.GetFileName(1)
 
 	var trace_id string
-	if l.Ctx != nil {
-		trace_id = LoadTraceIdStr(l.Ctx)
+	if l.Ctx != nil || l.Echo != nil {
+
+		getStr := l.Echo.Get(TraceId).(string)
+		if len(getStr) > 0 {
+			trace_id = getStr
+		} else {
+			trace_id = LoadTraceIdStr(l.Ctx)
+		}
 	}
 	buffer := client.GetBuffer(trace_id, name, line, v)
 	client.Add(buffer)
@@ -95,8 +109,14 @@ func (l *Log) Warning(v ...interface{}) {
 	name, line, _ := l.GetFileName(1)
 
 	var trace_id string
-	if l.Ctx != nil {
-		trace_id = LoadTraceIdStr(l.Ctx)
+	if l.Ctx != nil || l.Echo != nil {
+
+		getStr := l.Echo.Get(TraceId).(string)
+		if len(getStr) > 0 {
+			trace_id = getStr
+		} else {
+			trace_id = LoadTraceIdStr(l.Ctx)
+		}
 	}
 	buffer := client.GetBuffer(trace_id, name, line, v)
 	client.Add(buffer)
@@ -106,8 +126,14 @@ func (l *Log) Warning(v ...interface{}) {
 func (l *Log) Error(v ...interface{}) {
 	name, line, _ := l.GetFileName(1)
 	var trace_id string
-	if l.Ctx != nil {
-		trace_id = LoadTraceIdStr(l.Ctx)
+	if l.Ctx != nil || l.Echo != nil {
+
+		getStr := l.Echo.Get(TraceId).(string)
+		if len(getStr) > 0 {
+			trace_id = getStr
+		} else {
+			trace_id = LoadTraceIdStr(l.Ctx)
+		}
 	}
 	buffer := client.GetBuffer(trace_id, name, line, v)
 	client.Add(buffer)
