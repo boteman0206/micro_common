@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-var isDebug = false
+var IsDebug = false
 
 type DC_ES struct {
 	EsClient *elastic.Client
@@ -23,7 +23,7 @@ var esIndex = "my_log"
 
 func init() {
 
-	if isDebug {
+	if IsDebug {
 		var esUrl = "http://localhost:9200/"
 		// 创建Client, 连接ES
 		var err error

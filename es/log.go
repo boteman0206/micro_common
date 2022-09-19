@@ -100,7 +100,7 @@ func (l *Log) Info(v ...interface{}) {
 		}
 	}
 	buffer := client.GetBuffer(trace_id, name, line, v)
-	if isDebug {
+	if IsDebug {
 		client.Add(buffer)
 	}
 
@@ -121,7 +121,7 @@ func (l *Log) Warning(v ...interface{}) {
 		}
 	}
 	buffer := client.GetBuffer(trace_id, name, line, v)
-	if isDebug {
+	if IsDebug {
 		client.Add(buffer)
 	}
 	warningLogger.Print(v...)
@@ -140,7 +140,7 @@ func (l *Log) Error(v ...interface{}) {
 		}
 	}
 	buffer := client.GetBuffer(trace_id, name, line, v)
-	if isDebug {
+	if IsDebug {
 		client.Add(buffer)
 	}
 	errorLogger.Print(v...)
