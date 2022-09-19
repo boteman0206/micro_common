@@ -10,6 +10,8 @@ import (
 	"time"
 )
 
+var isDebug = false
+
 type DC_ES struct {
 	EsClient *elastic.Client
 	Buf      *bytes.Buffer
@@ -21,47 +23,49 @@ var esIndex = "my_log"
 
 func init() {
 
-	var esUrl = "http://localhost:9200/"
-	// 创建Client, 连接ES
-	var err error
-	esClient, err = elastic.NewClient(
-		// elasticsearch 服务地址，多个服务地址使用逗号分隔
-		elastic.SetURL(esUrl),
-		// 基于http base auth验证机制的账号和密码 不需要账号妈妈
-		//elastic.SetBasicAuth("user", "secret"),
-		// 启用gzip压缩
-		elastic.SetGzip(true),
-		// 设置监控检查时间间隔
-		elastic.SetHealthcheckInterval(10*time.Second),
-		// 设置请求失败最大重试次数
-		elastic.SetMaxRetries(5),
-		// 设置错误日志输出
-		//elastic.SetErrorLog(log.New(os.Stderr, "ELASTIC ", log.LstdFlags)),
-		//// 设置info日志输出
-		//elastic.SetInfoLog(log.New(os.Stdout, "", log.LstdFlags)))
+	if isDebug {
+		var esUrl = "http://localhost:9200/"
+		// 创建Client, 连接ES
+		var err error
+		esClient, err = elastic.NewClient(
+			// elasticsearch 服务地址，多个服务地址使用逗号分隔
+			elastic.SetURL(esUrl),
+			// 基于http base auth验证机制的账号和密码 不需要账号妈妈
+			//elastic.SetBasicAuth("user", "secret"),
+			// 启用gzip压缩
+			elastic.SetGzip(true),
+			// 设置监控检查时间间隔
+			elastic.SetHealthcheckInterval(10*time.Second),
+			// 设置请求失败最大重试次数
+			elastic.SetMaxRetries(5),
+			// 设置错误日志输出
+			//elastic.SetErrorLog(log.New(os.Stderr, "ELASTIC ", log.LstdFlags)),
+			//// 设置info日志输出
+			//elastic.SetInfoLog(log.New(os.Stdout, "", log.LstdFlags)))
 
-		elastic.SetSniff(false),
-	)
-	if err != nil {
-		log.Fatal("连接es失败", err.Error())
-	}
+			elastic.SetSniff(false),
+		)
+		if err != nil {
+			log.Fatal("连接es失败", err.Error())
+		}
 
-	do, i, err := esClient.Ping(esUrl).Do(context.Background())
-	if err != nil {
-		log.Fatal("连接esPing失败", err.Error())
-	}
-	fmt.Println(" 获取的es信息： ", do.Name, " i:", i)
+		do, i, err := esClient.Ping(esUrl).Do(context.Background())
+		if err != nil {
+			log.Fatal("连接esPing失败", err.Error())
+		}
+		fmt.Println(" 获取的es信息： ", do.Name, " i:", i)
 
-	exists, err := esClient.IndexExists(esIndex).Do(context.Background())
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-	if !exists {
-		result, err := esClient.CreateIndex(esIndex).Do(context.Background())
+		exists, err := esClient.IndexExists(esIndex).Do(context.Background())
 		if err != nil {
 			log.Fatal(err.Error())
 		}
-		fmt.Println("创建了es的index===: ", result.Index)
+		if !exists {
+			result, err := esClient.CreateIndex(esIndex).Do(context.Background())
+			if err != nil {
+				log.Fatal(err.Error())
+			}
+			fmt.Println("创建了es的index===: ", result.Index)
+		}
 	}
 
 }
