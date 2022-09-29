@@ -72,14 +72,10 @@ var (
 
 func (l *Log) Debug(v ...interface{}) {
 	var trace_id string
-	if l.Ctx != nil || l.Echo != nil {
-
-		getStr := l.Echo.Get(TraceId).(string)
-		if len(getStr) > 0 {
-			trace_id = getStr
-		} else {
-			trace_id = LoadTraceIdStr(l.Ctx)
-		}
+	if l.Ctx != nil {
+		trace_id = LoadTraceIdStr(l.Ctx)
+	} else if l.Echo != nil {
+		trace_id = l.Echo.Get(TraceId).(string)
 	}
 	name, line, _ := l.GetFileName(1)
 	debugLogger.Print(trace_id, name, line, v)
@@ -90,14 +86,10 @@ func (l *Log) Info(v ...interface{}) {
 	name, line, _ := l.GetFileName(1)
 
 	var trace_id string
-	if l.Ctx != nil || l.Echo != nil {
-
-		getStr := l.Echo.Get(TraceId).(string)
-		if len(getStr) > 0 {
-			trace_id = getStr
-		} else {
-			trace_id = LoadTraceIdStr(l.Ctx)
-		}
+	if l.Ctx != nil {
+		trace_id = LoadTraceIdStr(l.Ctx)
+	} else if l.Echo != nil {
+		trace_id = l.Echo.Get(TraceId).(string)
 	}
 	buffer := client.GetBuffer(trace_id, name, line, v)
 	if IsDebug {
@@ -111,14 +103,10 @@ func (l *Log) Warning(v ...interface{}) {
 	name, line, _ := l.GetFileName(1)
 
 	var trace_id string
-	if l.Ctx != nil || l.Echo != nil {
-
-		getStr := l.Echo.Get(TraceId).(string)
-		if len(getStr) > 0 {
-			trace_id = getStr
-		} else {
-			trace_id = LoadTraceIdStr(l.Ctx)
-		}
+	if l.Ctx != nil {
+		trace_id = LoadTraceIdStr(l.Ctx)
+	} else if l.Echo != nil {
+		trace_id = l.Echo.Get(TraceId).(string)
 	}
 	buffer := client.GetBuffer(trace_id, name, line, v)
 	if IsDebug {
@@ -130,14 +118,10 @@ func (l *Log) Warning(v ...interface{}) {
 func (l *Log) Error(v ...interface{}) {
 	name, line, _ := l.GetFileName(1)
 	var trace_id string
-	if l.Ctx != nil || l.Echo != nil {
-
-		getStr := l.Echo.Get(TraceId).(string)
-		if len(getStr) > 0 {
-			trace_id = getStr
-		} else {
-			trace_id = LoadTraceIdStr(l.Ctx)
-		}
+	if l.Ctx != nil {
+		trace_id = LoadTraceIdStr(l.Ctx)
+	} else if l.Echo != nil {
+		trace_id = l.Echo.Get(TraceId).(string)
 	}
 	buffer := client.GetBuffer(trace_id, name, line, v)
 	if IsDebug {
