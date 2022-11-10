@@ -5,6 +5,7 @@ import (
 	consulapi "github.com/hashicorp/consul/api"
 	"github.com/spf13/cast"
 	"log"
+	myConfig "micro_product/config"
 	"micro_product/micro_common/utils"
 	"net/http"
 	"strings"
@@ -29,14 +30,15 @@ func RegisterServer() {
 		log.Fatal("consul client error : ", err)
 	}
 
-	checkPort := 8082
+	fmt.Println("HealthPort: ", myConfig.ConfigRes.Ser.HealthPort)
+	checkPort := myConfig.ConfigRes.Ser.HealthPort
 
 	registration := new(consulapi.AgentServiceRegistration)
-	registration.Port = 8802
-	registration.ID = "micro_product" + utils.GetIP() + ":" + cast.ToString(registration.Port)
+	registration.Port = myConfig.ConfigRes.Ser.HttpPort
+	registration.ID = "micro_product:" + utils.GetIP() + ":" + cast.ToString(registration.Port)
 	registration.Name = "micro_product"
 	registration.Tags = []string{"micro_product", "v1.0"}
-	registration.Address = "127.0.0.1"
+	registration.Address = utils.GetIP()
 
 	registration.Check = &consulapi.AgentServiceCheck{
 		HTTP:                           fmt.Sprintf("http://%s:%d%s", registration.Address, checkPort, "/check"),
